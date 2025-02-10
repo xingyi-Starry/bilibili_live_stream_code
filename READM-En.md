@@ -40,3 +40,6 @@
 
 1. Author of this program: Chace.  
 2. Special thanks for the creation of this program: Qinzi.
+
+## Chinese version
+1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/README.md

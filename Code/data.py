@@ -42,3 +42,13 @@ title_data = \
         'csrf_token': '',  # 填csrf
         'csrf': '',  # 填csrf，这两个值一样的
     }
+
+id_data = \
+    {
+        'room_id': '',  # 填自己的room_id
+        'area_id': 642,
+        'activity_id': 0,
+        'platform': 'android_link',
+        'csrf_token': '',  # 填csrf
+        'csrf': '',  # 填csrf，这两个值一样的
+    }

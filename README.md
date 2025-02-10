@@ -40,3 +40,6 @@
 
 1. 本程序作者：Chace。  
 2. 本程序制作特别感谢：琴子。
+
+## 英文版
+1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/READM-En.md

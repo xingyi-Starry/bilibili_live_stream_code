@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.0
+版本：1.0.1
 
-更新时间：2025-02-10
+更新时间：2025-02-11
 """
 
 
@@ -57,10 +57,15 @@ if __name__ == '__main__':
 
     headers = dt.header
     data = dt.id_data
+    live_id = set_partition_id_ui()
+
+    if not live_id:
+        custom_pause("分区选择错误，请重新尝试！", 2, '错误')
+        sys.exit(2)
 
     data['room_id'] = room_id
     data['csrf_token'] = data['csrf'] = csrf
-    data['area_id'] = set_partition_id_ui()
+    data['area_id'] = live_id
 
     try:
         requests.post('https://api.live.bilibili.com/room/v1/Room/update',

@@ -3,22 +3,20 @@
 
 作者：Chace
 
-版本：1.0.0
+版本：1.0.1
 
-更新时间：2025-02-10
+更新时间：2025-02-11
 
 常用函数：
 
 1. login_ui() -> dict | None
 
-2. theme_ui() -> str
+2. theme_ui() -> str | None
 
-3. set_partition_id_ui() -> int
+3. set_partition_id_ui() -> int | None
 
 4. set_live_title_ui(headers: dict, cookies: dict, data: dict) -> bool
 """
-
-
 import tkinter
 import tkinter as tk
 import GetCookies as gc
@@ -150,6 +148,11 @@ def login_ui() -> dict | None:
     login_label.pack()
     tk.Label(window, text=qr_str, anchor='center', font=label_font).pack()
     login_enter(window, qr_key, cookies_list, login_label, False)
+
+    # 使窗口避免被遮挡，并且获取焦点
+    window.attributes('-topmost', True)
+    window.bind("<FocusIn>", lambda event: window.attributes('-topmost', False))
+
     window.mainloop()
     return cookies_list[0]
 
@@ -165,18 +168,18 @@ def theme_button(window: tk.Tk, listbox: tk.Listbox, theme: list) -> None:
     selected_id = listbox.curselection()
 
     if selected_id:
-        theme.append(listbox.get(selected_id))
+        theme[0] = listbox.get(selected_id)
         window.destroy()
-    else: # 至少要选择一个主题
+    else:  # 至少要选择一个主题
         tk.messagebox.showwarning("警告", "请选择一个主题！")
 
 
-def theme_ui() -> str:
+def theme_ui() -> str | None:
     """
     分区主题选择窗口
     :return: 选择的主题的名字
     """
-    theme = []
+    theme = [None]
 
     window = tk.Tk()
 
@@ -198,6 +201,10 @@ def theme_ui() -> str:
 
     button = tk.Button(window, text='确定', command=lambda: theme_button(window, listbox, theme))
     button.pack()
+
+    # 使窗口避免被遮挡，并且获取焦点
+    window.attributes('-topmost', True)
+    window.bind("<FocusIn>", lambda event: window.attributes('-topmost', False))
 
     window.mainloop()
 
@@ -231,7 +238,7 @@ def search_enter_button(window: tk.Tk, result: list, listbox: tk.Listbox, theme_
     :return: None
     """
     if listbox.curselection():
-        result.append(s.get_search_result(listbox.get(listbox.curselection()), theme_selected)[0]['id'])
+        result[0] = s.get_search_result(listbox.get(listbox.curselection()), theme_selected)[0]['id']
         window.destroy()
     else:
         tk.messagebox.showwarning("警告", "请选择一个结果！")
@@ -249,48 +256,56 @@ def init_search_list(listbox: tk.Listbox, theme_selected: str) -> None:
         listbox.insert(tk.END, result)
 
 
-def set_partition_id_ui() -> int:
+def set_partition_id_ui() -> int | None:
     """
     选择分区的窗口
     :return: 返回选择的分区的id
     """
     # 首先获得选择主题
     theme_selected = theme_ui()
-    results = []
+    results = [None]
 
-    window = tk.Tk()
-    center_window(window, 500, 450)
+    if theme_selected:
+        window = tk.Tk()
+        center_window(window, 500, 450)
 
-    window.title('B站推流码获取工具')
-    font = ('Courier New', 12)
+        window.title('B站推流码获取工具')
+        font = ('Courier New', 12)
 
-    label_theme = tk.Label(window, text=f'\n主题：{theme_selected}', anchor='center', font=font)
-    label_theme.pack()
+        label_theme = tk.Label(window, text=f'\n主题：{theme_selected}', anchor='center', font=font)
+        label_theme.pack()
 
-    label = tk.Label(window, text='请输入搜索内容：', anchor='center', font=font)
-    label.pack()
+        label = tk.Label(window, text='请输入搜索内容：', anchor='center', font=font)
+        label.pack()
 
-    entry = tk.Entry(window, width=30, font=font)
-    add_mouse_right(entry, window)
-    entry.pack()
+        entry = tk.Entry(window, width=30, font=font)
+        add_mouse_right(entry, window)
+        entry.pack()
 
-    label_search_result = tk.Label(window, text='搜索结果：', anchor='center', font=font)
-    label_search_result.pack()
-    listbox = tk.Listbox(window, width=20, height=13, font=font, justify=tk.CENTER)
-    listbox.pack()
-    init_search_list(listbox, theme_selected)
-    entry.bind("<Return>", lambda event: search_button(entry, theme_selected, listbox)) # 绑定回车键
+        label_search_result = tk.Label(window, text='搜索结果：', anchor='center', font=font)
+        label_search_result.pack()
+        listbox = tk.Listbox(window, width=20, height=13, font=font, justify=tk.CENTER)
+        listbox.pack()
+        init_search_list(listbox, theme_selected)
+        entry.bind("<Return>", lambda event: search_button(entry, theme_selected, listbox))  # 绑定回车键
 
-    button = tk.Button(window, text='搜索', command=lambda: search_button(entry, theme_selected, listbox))
-    button.place(x=420, y=62)
+        button = tk.Button(window, text='搜索', command=lambda: search_button(entry, theme_selected, listbox))
+        button.place(x=420, y=62)
 
-    button_enter = tk.Button(window, text='确认', command=lambda: search_enter_button(window, results, listbox, theme_selected))
-    button_enter.pack()
+        button_enter = tk.Button(window, text='确认',
+                                 command=lambda: search_enter_button(window, results, listbox, theme_selected))
+        button_enter.pack()
 
-    label_prompt = tk.Label(window, text='注：搜索结果可使用鼠标中间滚轮查看更多\n输入拼音首字母或全称，快速搜索', anchor='center', font=font)
-    label_prompt.pack()
+        label_prompt = tk.Label(window, text='注：搜索结果可使用鼠标中间滚轮查看更多\n输入拼音首字母或全称，快速搜索',
+                                anchor='center', font=font)
+        label_prompt.pack()
 
-    window.mainloop()
+        # 使窗口避免被遮挡，并且获取焦点
+        window.attributes('-topmost', True)
+        window.bind("<FocusIn>", lambda event: window.attributes('-topmost', False))
+
+        window.mainloop()
+
     return results[0]
 
 
@@ -303,6 +318,7 @@ def title_button(headers: dict, cookies: dict, data: dict, title: str, window: t
     :param title: 直播标题
     :param window: 对应的窗口
     :param is_ok: 是否成功设置
+
     :return: None
     """
     try:
@@ -311,11 +327,12 @@ def title_button(headers: dict, cookies: dict, data: dict, title: str, window: t
             is_ok[0] = False
             return
 
-        url = "https://api.live.bilibili.com/room/v1/Room/update"
+        if not len(title) == 0:  # 标题为空则为原标题
+            url = "https://api.live.bilibili.com/room/v1/Room/update"
 
-        data['title'] = title
+            data['title'] = title
 
-        requests.post(url, headers=headers, cookies=cookies, data=data)
+            requests.post(url, headers=headers, cookies=cookies, data=data)
     except Exception:
         is_ok[0] = False
     else:
@@ -331,9 +348,10 @@ def set_live_title_ui(headers: dict, cookies: dict, data: dict) -> bool:
     :param headers: 请求头
     :param cookies: cookies
     :param data: 负载数据
+
     :return: 是否设置成功
     """
-    is_ok = [True]
+    is_ok = [False]
 
     window = tk.Tk()
     center_window(window, 300, 100)
@@ -348,11 +366,21 @@ def set_live_title_ui(headers: dict, cookies: dict, data: dict) -> bool:
     entry.bind("<Return>", lambda event: title_button(headers, cookies, data, entry.get(), window, is_ok))
     entry.pack()
 
-    button = tk.Button(window, text='确定', command=lambda: title_button(headers, cookies, data, entry.get(), window, is_ok))
+    button = tk.Button(window, text='确定',
+                       command=lambda: title_button(headers, cookies, data, entry.get(), window, is_ok))
     button.pack()
+
+    tk.messagebox.showwarning("提示", "输入为空则为原标题！")
+
+    # 使窗口避免被遮挡，并且获取焦点
+    window.attributes('-topmost', True)
+    window.bind("<FocusIn>", lambda event: window.attributes('-topmost', False))
+
+    entry.focus_force()
 
     window.mainloop()
     return is_ok[0]
+
 
 if __name__ == '__main__':
     # print(set_partition_id_ui())

@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.0
+版本：1.0.1
 
-更新时间：2025-02-10
+更新时间：2025-02-11
 """
 
 
@@ -59,6 +59,7 @@ if __name__ == '__main__':
     data['room_id'] = room_id
     data['csrf_token'] = data['csrf'] = csrf
 
-    set_live_title_ui(dt.header, cookies, data)
-
-    custom_pause('直播标题修改成功！', 0, '提示')
+    if set_live_title_ui(dt.header, cookies, data):
+        custom_pause('直播标题修改成功！', 0, '提示')
+    else:
+        custom_pause('直播标题修改失败！', 1, '错误')

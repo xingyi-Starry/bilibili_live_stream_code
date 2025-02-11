@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.0
+版本：1.0.1
 
-更新时间：2025-02-10
+更新时间：2025-02-11
 
 常用函数：
 
@@ -17,7 +17,6 @@
 
 4. get_cookies() -> tuple
 """
-
 
 import io
 import requests
@@ -137,11 +136,17 @@ def get_cookies() -> tuple:
     完全获取room_id、cookies和csrf
     :return: 一个元组，按顺序包含room_id、cookies（字符串形式）和csrf
     """
+    room_id = None
+    cookies_str = None
+    csrf = None
+
     cookies = ui.login_ui()
-    room_id, csrf = get_room_id_and_csrf(cookies)
-    cookies_str = json.dumps(cookies, separators=(';', '='), ensure_ascii=False).replace('{', '').replace('}',
-                                                                                                          '').replace(
-        r'"', '')
+
+    if cookies:
+        room_id, csrf = get_room_id_and_csrf(cookies)
+        cookies_str = json.dumps(cookies, separators=(';', '='), ensure_ascii=False).replace('{', '').replace('}',
+                                                                                                              '').replace(
+            r'"', '')
     return room_id, cookies_str, csrf
 
 

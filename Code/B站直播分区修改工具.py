@@ -3,11 +3,10 @@
 
 作者：Chace
 
-版本：1.0.1
+版本：1.0.2
 
-更新时间：2025-02-11
+更新时间：2025-05-18
 """
-
 
 import os
 import re
@@ -17,6 +16,7 @@ import sys
 import requests
 import data as dt
 from search_ui import set_partition_id_ui
+from update_partition import get_new_partition
 
 cookies_file = 'cookies.txt'
 my_path = os.getcwd()
@@ -54,6 +54,12 @@ if __name__ == '__main__':
     # 转换为json
     cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
     cookies = {key: unquote(value) for key, value in cookies_pattern.findall(cookie_str)}
+
+    try:
+        get_new_partition(cookies)
+    except Exception as e:
+        custom_pause('获取分区列表时出错，错误如下\n' + str(e), 3, '错误')
+        sys.exit(3)
 
     headers = dt.header
     data = dt.id_data

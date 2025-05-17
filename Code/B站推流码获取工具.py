@@ -3,9 +3,9 @@
 
 作者：Chace
 
-版本：1.0.0
+版本：1.0.1
 
-更新时间：2025-02-10
+更新时间：2025-05-18
 """
 
 import sys
@@ -18,6 +18,8 @@ from urllib.parse import unquote
 from GetCookies import get_cookies
 import data as dt
 import search_ui as s_ui
+
+from update_partition import get_new_partition
 
 # 全局变量
 code_file = 'code.txt'
@@ -162,6 +164,12 @@ if __name__ == '__main__':
     # 转换为json
     cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
     cookies = {key: unquote(value) for key, value in cookies_pattern.findall(cookie_str)}
+
+    try:
+        get_new_partition(cookies)
+    except Exception as e:
+        custom_pause('获取直播分区失败，错误如下\n' + str(e), 13, '错误')
+        sys.exit(13)
 
     # 设置信息
     start = Start()

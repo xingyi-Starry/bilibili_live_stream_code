@@ -19,7 +19,7 @@ header = \
 start_data = \
     {
         'room_id': '',  # 填自己的room_id
-        'platform': 'android_link',
+        'platform': 'pc_link',
         'area_v2': '624',
         'backup_stream': '0',
         'csrf_token': '',  # 填csrf
@@ -29,7 +29,7 @@ start_data = \
 stop_data = \
     {
         'room_id': '',  # 一样，改room_id
-        'platform': 'android_link',
+        'platform': 'pc_link',
         'csrf_token': '',  # 一样，改csrf，两个都改
         'csrf': '',
     }
@@ -37,7 +37,7 @@ stop_data = \
 title_data = \
     {
         'room_id': '',  # 填自己的room_id
-        'platform': 'android_link',
+        'platform': 'pc_link',
         'title': '',
         'csrf_token': '',  # 填csrf
         'csrf': '',  # 填csrf，这两个值一样的
@@ -48,7 +48,7 @@ id_data = \
         'room_id': '',  # 填自己的room_id
         'area_id': 642,
         'activity_id': 0,
-        'platform': 'android_link',
+        'platform': 'pc_link',
         'csrf_token': '',  # 填csrf
         'csrf': '',  # 填csrf，这两个值一样的
     }

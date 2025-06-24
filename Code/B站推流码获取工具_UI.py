@@ -38,6 +38,7 @@ my_path = os.getcwd()
 
 class BiliLiveGUI:
     def __init__(self, root):
+        self.partition_cat = None
         self.root = root
         self.root.title("B站推流码获取工具")
         # self.root.geometry("900x700")
@@ -116,8 +117,8 @@ class BiliLiveGUI:
 
 
         # 检查首次运行
-        self.use_cookies_file()
         self.check_first_run()
+        self.use_cookies_file()
 
     # 定义一个函数，用于设置窗口居中显示
     def center_window(self, width, height):
@@ -555,6 +556,8 @@ class BiliLiveGUI:
                         self.log_message("成功加载cookies.txt文件")
                         messagebox.showinfo("成功", "Cookies文件加载成功！")
                         self.notebook.select(self.live_tab)
+                        self.root.focus_force()
+                        # self.root.after(0, lambda: self.partition_cat.focus())
                     else:
                         messagebox.showerror("错误", "cookies.txt文件格式不正确")
             except Exception as e:

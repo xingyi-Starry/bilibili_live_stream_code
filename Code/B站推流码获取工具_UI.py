@@ -196,7 +196,7 @@ class BiliLiveGUI:
 
             if success:
                 self.log_message(f"弹幕发送成功: {msg}")
-                messagebox.showinfo("成功", f"弹幕发送成功: {message}")
+                # messagebox.showinfo("成功", f"弹幕发送成功: {message}")
             else:
                 self.log_message(f"弹幕发送失败: {message}")
                 messagebox.showerror("错误", f"弹幕发送失败: {message}")

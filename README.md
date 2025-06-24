@@ -38,6 +38,9 @@
 
 1. 本程序作者：[Chace](https://github.com/ChaceQC)。  
 2. 本程序制作特别感谢：[琴子](https://github.com/Truble-Maker)。
+### TODO：
+1.完全去除黑框框
+2.将三个界面进行整合
 
 ## 英文版
 1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/READM-En.md

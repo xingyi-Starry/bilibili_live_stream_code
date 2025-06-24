@@ -41,6 +41,7 @@
 ### TODO：
 1. 完全去除黑框框。
 2. 将三个界面进行整合。
+3. 整合后加入发送弹幕功能。
 
 ## 英文版
 1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/READM-En.md

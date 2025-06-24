@@ -42,7 +42,7 @@
 1. 完全去除黑框框。√
 2. 将三个界面进行整合。√
 3. 整合后加入发送弹幕功能。√
-4. 整合版地址：[https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/beta_v0.2.0](https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/beta_v0.2.0)。
+4. 整合版地址：[https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/beta_v0.2.1](https://github.com/ChaceQC/bilibili_live_stream_code/releases/tag/beta_v0.2.1)。
 
 ## 英文版
 1. https://github.com/ChaceQC/bilibili_live_stream_code/blob/main/READM-En.md

@@ -52,3 +52,14 @@ id_data = \
         'csrf_token': '',  # 填csrf
         'csrf': '',  # 填csrf，这两个值一样的
     }
+
+bullet_data = \
+    {
+        "msg": "",
+        "color": 16777215,
+        "fontsize": 25,
+        "rnd": 0,
+        "roomid": 0,
+        "csrf_token": '',
+        "csrf": '',
+    }

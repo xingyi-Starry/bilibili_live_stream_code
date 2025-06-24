@@ -3,7 +3,7 @@
 
 作者：Chace
 
-版本：0.1.0
+版本：0.1.1
 
 更新时间：2025-06-24
 """
@@ -27,19 +27,22 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from GetCookies import get_cookies
 import data as dt
 from update_partition import get_new_partition
+from bullet import send_bullet
 
 # 全局变量
 code_file = 'code.txt'
 cookies_file = 'cookies.txt'
+last_settings_file = 'last_settings.json'
 my_path = os.getcwd()
 
 
 class BiliLiveGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("B站推流码获取工具 v1.0.1")
-        self.root.geometry("900x700")
-        self.root.resizable(True, True)
+        self.root.title("B站推流码获取工具")
+        # self.root.geometry("900x700")
+        self.center_window(900, 700)
+        self.root.resizable(False, False)
         self.root.configure(bg="#f0f0f0")
 
         # 应用图标
@@ -59,6 +62,7 @@ class BiliLiveGUI:
         self.style.configure("Status.TLabel", font=("微软雅黑", 9), foreground="#555")
         self.style.configure("Red.TButton", foreground="red")
         self.style.configure("Green.TButton", foreground="green")
+        self.style.configure("TNotebook.Tab", font=("微软雅黑", 10))
 
         # 创建主框架
         self.main_frame = ttk.Frame(root)
@@ -92,7 +96,7 @@ class BiliLiveGUI:
         # 分区数据
         self.partition_data = {}
         self.load_partition_data()
-        self.root.after(0, self.update_partition_ui)
+        # self.root.after(0, self.update_partition_ui)
         self.selected_area = tk.StringVar()
         self.selected_sub_area = tk.StringVar()
 
@@ -100,6 +104,9 @@ class BiliLiveGUI:
         self.create_setup_tab()
         self.create_live_tab()
         self.create_result_tab()
+
+        self.update_partition_ui()
+        self.load_last_settings()
 
         # 状态栏
         self.status_var = tk.StringVar()
@@ -109,7 +116,16 @@ class BiliLiveGUI:
 
 
         # 检查首次运行
+        self.use_cookies_file()
         self.check_first_run()
+
+    # 定义一个函数，用于设置窗口居中显示
+    def center_window(self, width, height):
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width / 2) - (width / 2)
+        y = (screen_height / 2) - (height / 2)
+        self.root.geometry('%dx%d+%d+%d' % (width, height, x, y))
 
     def get_desktop_folder_path(self):
         """读取注册表，获取桌面路径"""
@@ -156,6 +172,40 @@ class BiliLiveGUI:
                                 "4. 直播结束后点击'停止直播'\n\n"
                                 "详细使用说明：https://download.chacewebsite.cn/uploads/使用说明.txt")
 
+    def send_bullet_callback(self):
+        """点击发送弹幕按钮时调用"""
+        msg = self.bullet_entry.get().strip()
+        if not msg:
+            messagebox.showwarning("警告", "请输入弹幕内容！")
+            return
+
+        if not self.room_id.get() or not self.cookie_str.get() or not self.csrf.get():
+            messagebox.showwarning("警告", "请先设置账号信息！")
+            return
+
+        # 转换为cookies字典
+        cookies_pattern = re.compile(r'(\w+)=([^;]+)(?:;|$)')
+        cookies = {key: unquote(value) for key, value in cookies_pattern.findall(self.cookie_str.get())}
+
+        try:
+            roomid = int(self.room_id.get())
+            csrf = self.csrf.get()
+
+            success, message = send_bullet(msg, csrf, roomid, cookies)
+
+            if success:
+                self.log_message(f"弹幕发送成功: {msg}")
+                messagebox.showinfo("成功", f"弹幕发送成功: {message}")
+            else:
+                self.log_message(f"弹幕发送失败: {message}")
+                messagebox.showerror("错误", f"弹幕发送失败: {message}")
+
+            # 清空输入框
+            self.bullet_entry.delete(0, tk.END)
+        except Exception as e:
+            self.log_message(f"发送弹幕时出错: {str(e)}")
+            messagebox.showerror("错误", f"发送弹幕时出错:\n{str(e)}")
+
     def create_setup_tab(self):
         """创建账号设置选项卡"""
         setup_frame = ttk.Frame(self.setup_tab)
@@ -167,7 +217,7 @@ class BiliLiveGUI:
         file_frame = ttk.LabelFrame(setup_frame, text="Cookies文件")
         file_frame.grid(row=0, column=0, sticky="ew", pady=10)
 
-        ttk.Label(file_frame, text="检测到cookies.txt文件:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        ttk.Label(file_frame, text="使用登录记录:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         ttk.Button(file_frame, text="使用Cookies文件", command=self.use_cookies_file).grid(row=0, column=1, padx=5,
                                                                                            pady=5)
 
@@ -191,15 +241,15 @@ class BiliLiveGUI:
         manual_frame.grid(row=4, column=0, sticky="ew", pady=10)
 
         ttk.Label(manual_frame, text="Room ID:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        room_entry = ttk.Entry(manual_frame, textvariable=self.room_id, width=40)
+        room_entry = ttk.Entry(manual_frame, textvariable=self.room_id, width=40, show='*')
         room_entry.grid(row=0, column=1, padx=5, pady=5)
 
         ttk.Label(manual_frame, text="Cookies:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        cookie_entry = ttk.Entry(manual_frame, textvariable=self.cookie_str, width=40)
+        cookie_entry = ttk.Entry(manual_frame, textvariable=self.cookie_str, width=40, show='*')
         cookie_entry.grid(row=1, column=1, padx=5, pady=5)
 
         ttk.Label(manual_frame, text="CSRF Token:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
-        csrf_entry = ttk.Entry(manual_frame, textvariable=self.csrf, width=40)
+        csrf_entry = ttk.Entry(manual_frame, textvariable=self.csrf, width=40, show='*')
         csrf_entry.grid(row=2, column=1, padx=5, pady=5)
 
         ttk.Button(manual_frame, text="保存设置", command=self.save_settings).grid(
@@ -256,16 +306,33 @@ class BiliLiveGUI:
             row=0, column=5, padx=10, pady=5
         )
 
+        # 弹幕区域
+        bullet_frame = ttk.LabelFrame(live_frame, text="发送弹幕")
+        bullet_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Label(bullet_frame, text="输入弹幕内容:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+
+        self.bullet_entry = ttk.Entry(bullet_frame, width=40)
+        self.bullet_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Button(bullet_frame, text="发送弹幕", command=self.send_bullet_callback).grid(
+            row=0, column=2, padx=5, pady=5, sticky=tk.E
+        )
+
         # 开始直播按钮
         btn_frame = ttk.Frame(live_frame)
-        btn_frame.pack(fill=tk.X, pady=20)
+        btn_frame.pack(fill=tk.X, pady=5)
 
         self.start_btn = ttk.Button(btn_frame, text="开始直播", command=self.start_live, style="Green.TButton")
         self.start_btn.pack(side=tk.RIGHT, padx=10)
 
-        # 状态标签
-        self.live_status = ttk.Label(live_frame, text="尚未开始直播", foreground="gray")
-        self.live_status.pack(pady=5)
+        # 日志区域
+        log_frame = ttk.LabelFrame(live_frame, text="操作日志")
+        log_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        self.live_log_area = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, height=8)
+        self.live_log_area.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.live_log_area.config(state=tk.DISABLED)
 
     def create_result_tab(self):
         """创建推流信息选项卡"""
@@ -317,11 +384,21 @@ class BiliLiveGUI:
         self.log_area.config(state=tk.DISABLED)
 
     def log_message(self, message):
-        """记录日志消息"""
+        """记录日志消息，并同步更新所有日志区域"""
+        # 更新主日志区域（推流信息页）
         self.log_area.config(state=tk.NORMAL)
         self.log_area.insert(tk.END, message + "\n")
         self.log_area.see(tk.END)
         self.log_area.config(state=tk.DISABLED)
+
+        # 更新直播设置页的日志区域（如果存在）
+        if hasattr(self, 'live_log_area'):
+            self.live_log_area.config(state=tk.NORMAL)
+            self.live_log_area.insert(tk.END, message + "\n")
+            self.live_log_area.see(tk.END)
+            self.live_log_area.config(state=tk.DISABLED)
+
+        # 更新状态栏
         self.status_var.set(message)
 
     def show_help(self):
@@ -334,6 +411,42 @@ class BiliLiveGUI:
                 webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
         else:
             webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
+
+    def save_last_settings(self):
+        """保存最后一次使用的标题和分区信息"""
+        settings = {
+            "live_title": self.live_title.get(),
+            "selected_area": self.selected_area.get(),
+            "selected_sub_area": self.selected_sub_area.get()
+        }
+        file_path = os.path.join(my_path, last_settings_file)
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(settings, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            self.log_message(f"保存上次设置失败: {str(e)}")
+
+    def load_last_settings(self):
+        """加载上次使用的标题和分区信息"""
+        file_path = os.path.join(my_path, last_settings_file)
+        if not os.path.exists(file_path):
+            return
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+
+            # 恢复标题
+            if settings.get("live_title"):
+                self.live_title.set(settings["live_title"])
+
+            # 恢复分区选择
+            if settings.get("selected_area") and settings.get("selected_sub_area"):
+                self.selected_area.set(settings["selected_area"])
+                self.update_sub_partitions()  # 更新子分区下拉框
+                self.selected_sub_area.set(settings["selected_sub_area"])
+        except Exception as e:
+            self.log_message(f"加载上次设置失败: {str(e)}")
 
     def update_title(self):
         """手动更新直播标题"""
@@ -374,6 +487,7 @@ class BiliLiveGUI:
 
             self.root.after(0, lambda: messagebox.showinfo("成功", "直播标题已更新！"))
             self.log_message("直播标题已更新！")
+            self.save_last_settings()
         except Exception as e:
             self.log_message(f"更新直播标题时出错: {str(e)}")
             self.root.after(0, lambda: messagebox.showerror("错误", f"更新直播标题时出错:\n{str(e)}"))
@@ -418,6 +532,7 @@ class BiliLiveGUI:
 
             self.log_message("直播分区已更新！")
             self.root.after(0, lambda: messagebox.showinfo("成功", "直播分区已更新！"))
+            self.save_last_settings()
         except Exception as e:
             self.log_message(f"更新直播分区时出错: {str(e)}")
             self.root.after(0, lambda: messagebox.showerror("错误", f"更新直播分区时出错:\n{str(e)}"))
@@ -439,6 +554,7 @@ class BiliLiveGUI:
                         self.csrf.set(value[2])
                         self.log_message("成功加载cookies.txt文件")
                         messagebox.showinfo("成功", "Cookies文件加载成功！")
+                        self.notebook.select(self.live_tab)
                     else:
                         messagebox.showerror("错误", "cookies.txt文件格式不正确")
             except Exception as e:
@@ -461,6 +577,7 @@ class BiliLiveGUI:
             self.csrf.set(csrf)
             self.log_message("账号信息获取成功！")
             messagebox.showinfo("成功", "账号信息获取成功！")
+            self.save_settings()
         except Exception as e:
             self.log_message(f"获取账号信息出错: {str(e)}")
             messagebox.showerror("错误", f"获取账号信息出错: {str(e)}")
@@ -480,6 +597,7 @@ class BiliLiveGUI:
 
             self.log_message("账号信息保存成功！")
             messagebox.showinfo("成功", "账号信息保存成功！")
+            self.notebook.select(self.live_tab)
         except Exception as e:
             self.log_message(f"保存设置时出错: {str(e)}")
             messagebox.showerror("错误", f"保存设置时出错:\n{str(e)}")
@@ -576,11 +694,17 @@ class BiliLiveGUI:
             messagebox.showwarning("警告", "请选择直播分区！")
             return
 
+        if self.live_server.get() or self.live_code.get():
+            messagebox.showwarning("警告", "正在进行直播！")
+            return
+
         self.log_message("正在开始直播...")
         self.start_btn.config(state=tk.DISABLED)
 
         # 在新线程中执行开始直播的操作
         threading.Thread(target=self._start_live_thread, args=(area_id,), daemon=True).start()
+
+        self.save_last_settings()
 
     def _start_live_thread(self, area_id):
         try:
@@ -661,7 +785,7 @@ class BiliLiveGUI:
         self.live_server.set(rtmp_addr)
         self.live_code.set(rtmp_code)
         self.stop_btn.config(state=tk.NORMAL)
-        self.live_status.config(text="直播已开启", foreground="green")
+        # self.live_status.config(text="直播已开启", foreground="green")
         self.notebook.select(self.result_tab)
 
     def stop_live(self):
@@ -717,7 +841,8 @@ class BiliLiveGUI:
         """停止直播后更新UI"""
         self.live_server.set("")
         self.live_code.set("")
-        self.live_status.config(text="直播已停止", foreground="red")
+        # self.live_status.config(text="直播已停止", foreground="red")
+        self.notebook.select(self.live_tab)
 
     def copy_server(self):
         """复制服务器地址"""

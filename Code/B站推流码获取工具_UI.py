@@ -18,16 +18,15 @@ import re
 from urllib.parse import unquote
 import sys
 import requests
-import ctypes
-from ctypes import wintypes
 import webbrowser
+import sys_api
 
 # 导入原始模块
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from GetCookies import get_cookies
 import data as dt
 from update_partition import get_new_partition
-from bullet import send_bullet
+# from bullet import send_bullet
 
 # 全局变量
 code_file = 'code.txt'
@@ -130,9 +129,7 @@ class BiliLiveGUI:
 
     def get_desktop_folder_path(self):
         """读取注册表，获取桌面路径"""
-        buf = ctypes.create_unicode_buffer(wintypes.MAX_PATH)
-        ctypes.windll.shell32.SHGetFolderPathW(0, 0x0000, 0, 0, buf)
-        return buf.value
+        return sys_api.get_desktop_path()
 
     def check_first_run(self):
         """检查是否是首次运行"""
@@ -142,18 +139,19 @@ class BiliLiveGUI:
                 is_first = file.readline().split(':')[1].strip()
                 if int(is_first) == 1:
                     self.show_first_run_info()
-                    # 更新配置文件
-                    with open(config_path, 'w', encoding='utf-8') as file:
-                        file.write('use_first: 0')
+        # config.ini不存在视作首次运行
         else:
-            messagebox.showerror("错误", "未找到config.ini，请尝试重新安装此程序！")
+            self.show_first_run_info()
+        # 更新配置文件
+        with open(config_path, 'w', encoding='utf-8') as file:
+            file.write('use_first: 0')
 
     def show_first_run_info(self):
         """显示首次运行信息"""
         help_path = os.path.join(my_path, '使用说明.txt')
         if os.path.exists(help_path):
             try:
-                os.startfile(help_path)
+                sys_api.startfile(help_path)
             except:
                 messagebox.showinfo("使用说明",
                                     "欢迎使用B站推流码获取工具！\n\n"
@@ -407,7 +405,7 @@ class BiliLiveGUI:
         help_path = os.path.join(my_path, '使用说明.txt')
         if os.path.exists(help_path):
             try:
-                os.startfile(help_path)
+                sys_api.startfile(help_path)
             except:
                 webbrowser.open('https://download.chacewebsite.cn/uploads/使用说明.txt')
         else:
@@ -880,7 +878,7 @@ class BiliLiveGUI:
 
             # 打开文件
             try:
-                os.startfile(file_path)
+                sys_api.startfile(file_path)
             except:
                 pass
 

@@ -11,10 +11,10 @@
 import os
 import re
 from urllib.parse import unquote
-from B站推流码获取工具 import custom_pause
 import sys
 import requests
 import data as dt
+import sys_api
 from search_ui import set_partition_id_ui
 from update_partition import get_new_partition
 
@@ -39,10 +39,10 @@ def get_cookies_in_files() -> tuple:
                 cookie_str = value[1]
                 csrf = value[2]
         except Exception as e:
-            custom_pause('打开或读取cookies.txt文件时出错，错误如下\n' + str(e), 1, '错误')
+            sys_api.custom_pause('打开或读取cookies.txt文件时出错，错误如下\n' + str(e), 1, '错误')
             sys.exit(1)
     else:
-        custom_pause('cookies.txt文件不存在，请先登录！', 2, '错误')
+        sys_api.custom_pause('cookies.txt文件不存在，请先登录！', 2, '错误')
         sys.exit(2)
     return room_id, cookie_str, csrf
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     try:
         get_new_partition(cookies)
     except Exception as e:
-        custom_pause('获取分区列表时出错，错误如下\n' + str(e), 3, '错误')
+        sys_api.custom_pause('获取分区列表时出错，错误如下\n' + str(e), 3, '错误')
         sys.exit(3)
 
     headers = dt.header
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     live_id = set_partition_id_ui()
 
     if not live_id:
-        custom_pause("分区选择错误，请重新尝试！", 2, '错误')
+        sys_api.custom_pause("分区选择错误，请重新尝试！", 2, '错误')
         sys.exit(2)
 
     data['room_id'] = room_id
@@ -78,7 +78,7 @@ if __name__ == '__main__':
                       cookies=cookies,
                       headers=headers, data=data)
     except Exception as e:
-        custom_pause('更改分区时出错，错误如下\n' + str(e), 1, '错误')
+        sys_api.custom_pause('更改分区时出错，错误如下\n' + str(e), 1, '错误')
         sys.exit(1)
     else:
-        custom_pause('更改分区成功！', 0, '提示')
+        sys_api.custom_pause('更改分区成功！', 0, '提示')
